@@ -21,6 +21,7 @@ class Collapsible extends Component {
       PropTypes.string,
       PropTypes.func,
     ]),
+    pointerEventsInCollapsed: PropTypes.string,
     style: View.propTypes.style,
   };
 
@@ -30,6 +31,7 @@ class Collapsible extends Component {
     collapsedHeight: 0,
     duration: 300,
     easing: 'easeOutCubic',
+    pointerEventsInCollapsed: 'none',
   };
 
   componentWillReceiveProps(nextProps) {
@@ -168,7 +170,7 @@ class Collapsible extends Component {
     return (
       <Animated.View
         style={style}
-        pointerEvents={collapsed ? 'none' : 'auto'}
+        pointerEvents={collapsed ? this.props.pointerEventsInCollapsed : 'auto'}
       >
         <Animated.View
           ref={this._handleRef}
