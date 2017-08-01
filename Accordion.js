@@ -1,19 +1,13 @@
-import React, {
-  Component,
-  PropTypes,
-} from 'react';
-
-import {
-  View,
-  TouchableHighlight,
-} from 'react-native';
-
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { View, TouchableHighlight } from 'react-native';
 import Collapsible from './Collapsible';
+import { ViewPropTypes } from './config';
 
 const COLLAPSIBLE_PROPS = Object.keys(Collapsible.propTypes);
-const VIEW_PROPS = Object.keys(View.propTypes);
+const VIEW_PROPS = Object.keys(ViewPropTypes);
 
-class Accordion extends Component {
+export default class Accordion extends Component {
   static propTypes = {
     sections: PropTypes.array.isRequired,
     renderHeader: PropTypes.func.isRequired,
@@ -28,10 +22,13 @@ class Accordion extends Component {
       PropTypes.number, // sets index of section to open
     ]),
     underlayColor: PropTypes.string,
+    touchableComponent: PropTypes.func,
+    touchableProps: PropTypes.object,
   };
 
   static defaultProps = {
     underlayColor: 'black',
+    touchableComponent: TouchableHighlight,
   };
 
   constructor(props) {
@@ -39,19 +36,11 @@ class Accordion extends Component {
 
     // if activeSection not specified, default to initiallyActiveSection
     this.state = {
-      activeSection: props.activeSection !== undefined ? props.activeSection : props.initiallyActiveSection,
+      activeSection:
+        props.activeSection !== undefined
+          ? props.activeSection
+          : props.initiallyActiveSection,
     };
-  }
-
-  _toggleSection(section) {
-    const activeSection = this.state.activeSection === section ? false : section;
-
-    if (this.props.activeSection === undefined) {
-      this.setState({ activeSection });
-    }
-    if (this.props.onChange) {
-      this.props.onChange(activeSection);
-    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -62,10 +51,22 @@ class Accordion extends Component {
     }
   }
 
+  _toggleSection(section) {
+    const activeSection =
+      this.state.activeSection === section ? false : section;
+
+    if (this.props.activeSection === undefined) {
+      this.setState({ activeSection });
+    }
+    if (this.props.onChange) {
+      this.props.onChange(activeSection);
+    }
+  }
+
   render() {
     let viewProps = {};
     let collapsibleProps = {};
-    Object.keys(this.props).forEach((key) => {
+    Object.keys(this.props).forEach(key => {
       if (COLLAPSIBLE_PROPS.indexOf(key) !== -1) {
         collapsibleProps[key] = this.props[key];
       } else if (VIEW_PROPS.indexOf(key) !== -1) {
@@ -73,21 +74,36 @@ class Accordion extends Component {
       }
     });
 
+    const Touchable = this.props.touchableComponent;
+
     return (
       <View {...viewProps}>
-      {this.props.sections.map((section, key) => (
-        <View key={key}>
-          <TouchableHighlight onPress={() => this._toggleSection(key)} underlayColor={this.props.underlayColor}>
-            {this.props.renderHeader(section, key, this.state.activeSection === key)}
-          </TouchableHighlight>
-          <Collapsible collapsed={this.state.activeSection !== key} {...collapsibleProps}>
-            {this.props.renderContent(section, key, this.state.activeSection === key)}
-          </Collapsible>
-        </View>
-      ))}
+        {this.props.sections.map((section, key) =>
+          <View key={key}>
+            <Touchable
+              onPress={() => this._toggleSection(key)}
+              underlayColor={this.props.underlayColor}
+              {...this.props.touchableProps}
+            >
+              {this.props.renderHeader(
+                section,
+                key,
+                this.state.activeSection === key
+              )}
+            </Touchable>
+            <Collapsible
+              collapsed={this.state.activeSection !== key}
+              {...collapsibleProps}
+            >
+              {this.props.renderContent(
+                section,
+                key,
+                this.state.activeSection === key
+              )}
+            </Collapsible>
+          </View>
+        )}
       </View>
     );
   }
 }
-
-module.exports = Accordion;
